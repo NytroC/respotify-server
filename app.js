@@ -34,7 +34,7 @@ app.get('/', function(req, res) {
                 artists.forEach(artist => {
                     album.push({ artist })
                   });
-                res.send(album);
+                res.send(test);
             }
         });    
     };// successful response

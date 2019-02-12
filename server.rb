@@ -3,7 +3,7 @@ require 'json'
 require 'aws-sdk-s3'
 
 class Server < Sinatra::Base
-    set :port, 3000
+
     def initialize
         super()
         @role_credentials = Aws::AssumeRoleCredentials.new(
@@ -11,9 +11,23 @@ class Server < Sinatra::Base
             role_arn: "arn:aws:iam::170621239995:role/s3admin",
             role_session_name: "Ruby-CLI"
           )
-        @s3 = Aws::S3::Client.new(credentials: @role_credentials)
+        @s3 = Aws::S3::Client.new(credentials: @role_credentials, region: "us-east-1")
         @signer = Aws::S3::Presigner.new
     end 
+    configure do
+        enable :cross_origin
+    end
+    before do
+        response.headers['Access-Control-Allow-Origin'] = '*'
+    end
+      
+      # routes...
+    options "*" do
+        response.headers["Allow"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-User-Email, X-Auth-Token"
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        200
+    end
     get '/' do
         resp = @s3.list_objects({
             bucket: "do-not-kick", 

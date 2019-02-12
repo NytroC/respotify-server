@@ -18,15 +18,18 @@ app.get('/', function(req, res) {
     else{
         console.log(data);
         AWS.config.credentials = sts.credentialsFrom(data);
+        console.log("before")
         console.log(AWS.config.credentials);
         var songBucket = new AWS.S3({
            apiVersion: '2006-03-01',
            params: {Bucket: "do-not-kick"}
         });
+        console.log("here");
         songBucket.listObjectsV2({}, function(err, data) {
             if (err) console.log(err); 
             else{
                 let album = [];
+                console.log("in");
                 var artists =  data.Contents.map(obj => {
                    var object = obj.Key.split('/')
                    var artist = object[1]

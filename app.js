@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const AWS = require('aws-sdk');
-const port = 80
+const port = 3000
 
 
 

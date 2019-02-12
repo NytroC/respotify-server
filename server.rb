@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'json'
 require 'aws-sdk-s3'
+require 'sinatra/cross_origin'
 
 class Server < Sinatra::Base
 
@@ -12,7 +13,7 @@ class Server < Sinatra::Base
             role_session_name: "Ruby-CLI"
           )
         @s3 = Aws::S3::Client.new(credentials: @role_credentials, region: "us-east-1")
-        @signer = Aws::S3::Presigner.new
+        @signer = Aws::S3::Presigner.new(client: @s3)
     end 
     configure do
         enable :cross_origin

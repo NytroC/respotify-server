@@ -160,6 +160,21 @@ class Server < Sinatra::Base
         rescue
             "error in request"
         end
-
     end
+
+    post "/save-user" do
+        params = JSON.parse(request.body.read).to_h
+        user_name = params["userName"]
+        user_id = params["userId"]
+        email = params["userEmail"]
+        @dynamodb.put_item({
+            table_name: "user", # required
+            item: { # required
+              "name" => user_name,
+              "id" => user_id,
+              "email" => email,
+            }
+          })
+        return "status: 200, ok"
+    end 
 end

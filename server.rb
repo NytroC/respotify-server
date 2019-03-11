@@ -17,6 +17,7 @@ class Server < Sinatra::Base
             region: "us-east-1"
         )
         @s3 = Aws::S3::Client.new(credentials: @role_credentials, region: "us-east-1")
+        @sqs = Aws::SQS::Client.new(credentials: @role_credentials, region: 'us-east-1')
         @signer = Aws::S3::Presigner.new(client: @s3)
     end 
     configure do
@@ -144,15 +145,16 @@ class Server < Sinatra::Base
         }
         begin
             resp3 = @dynamodb.scan(params3)
+            puts resp3[:items][0]["song"]
             unless resp3[:items][0]["s3_location"].nil?
                 url = @signer.presigned_url(:get_object, 
                     bucket: "do-not-kick", 
-                    key: object[:key],
+                    key: resp3[:items][0]["s3_location"],
                     expires_in: 3600
                 )
             end 
-            resp3[:items][0]["song"]
-
+            
+            puts url
             return {
                 song: resp3[:items][0]["song"],
                 url: url
@@ -176,5 +178,19 @@ class Server < Sinatra::Base
             }
           })
         return "status: 200, ok"
+    end 
+
+    post "/play" do
+        queue_name = "reporting"
+        queue_url = @sqs.get_queue_url(queue_name: queue_name).queue_url
+    
+        params = JSON.parse(request.body.read).to_h
+        puts params
+        send_message_result = @sqs.send_message({
+            queue_url: queue_url, 
+            message_body: params.to_json,
+            
+          })
+          return "status: 200, ok"
     end 
 end
